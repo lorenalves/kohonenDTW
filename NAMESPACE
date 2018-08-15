@@ -1,0 +1,25 @@
+export("som","xyf", "supersom", "expandMap", "somgrid",
+       "classvec2classmat", "classmat2classvec",
+       "map", "add.cluster.boundaries", 
+       "object.distances", "unit.distances",
+       "getCodes", "check.whatmap", "tricolor")
+
+S3method(print, kohonenDTW)
+S3method(plot, kohonenDTW)
+S3method(predict, kohonenDTW)
+S3method(summary, kohonenDTW)
+S3method(identify, kohonenDTW)
+S3method(map, kohonenDTW)
+
+useDynLib(kohonenDTW, .registration = TRUE)
+#exportPattern("^[[:alpha:]]+")
+# Import all packages listed as Imports or Depends
+importFrom(MASS, eqscplot)
+
+# Import from default packages
+importFrom("graphics", "abline", "axTicks", "axis", "identify", "polygon",
+           "legend", "lines", "matplot", "par", "plot", "points",
+           "rect", "segments", "stars", "symbols", "text", "title") 
+importFrom("grDevices", "heat.colors", "terrain.colors")
+importFrom("stats", "aggregate", "dist", "quantile", "rnorm", "median")
+importFrom(Rcpp, evalCpp, sourceCpp)
