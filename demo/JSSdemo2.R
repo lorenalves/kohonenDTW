@@ -1,7 +1,25 @@
+# This package is a extension of kohonen packageversion 3.0.5 
+# Copyright (C) 2017,  Ron Wehrens and Johannes Kruisselbrink
+#
+
 ### Demo presenting the code to replicate the second example from the
 ### 2017 JSS publication on the kohonen package v. 3.0, the ecological
 ### case linking species diversity at different sites to soil
 ### characteristics.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+
+
+
 
 require("kohonenDTW")
 require("Rcpp")

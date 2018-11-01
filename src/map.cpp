@@ -1,11 +1,22 @@
 /* map.c: calculate distances of objects to units, now using the
-   appropriate distance functions. We also need to take into account
-   weights. We do not return all distances but only the winners and
-   the associated overall distances.
+ appropriate distance functions. We also need to take into account
+ weights. We do not return all distances but only the winners and
+ the associated overall distances.
+ 
+ This package is a extension of kohonen package 3.0.5.
+ Copyright (C) July 2016,  Ron Wehrens and Johannes Kruisselbrink
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ */
 
-   This version: July 27, 2016
-   Author: Ron Wehrens and Johannes Kruisselbrink
-*/
 
 #include <Rcpp.h>
 

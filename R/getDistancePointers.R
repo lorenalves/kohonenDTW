@@ -1,4 +1,18 @@
-#This file 
+# This package is a extension of kohonen package version 3.0.5
+# The distance DTW was added in this function.
+# Copyright (C) 2018,  Ron Wehrens and Johannes Kruisselbrink
+# Copyright (C) 2018,  Lorena Santos
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
 
 
 ## function to convert a vector of strings (either prefab distances,
@@ -10,7 +24,7 @@
 
 getDistancePointers <- function(dist.fcts,
                                 prefabDists = c("sumofsquares", "euclidean",
-                                                "manhattan", "tanimoto", "dtw"),
+                                                "manhattan", "tanimoto"),
                                 maxNA.fraction) {  
   ## Text distance functions can be predefined names, C++ function
   ## definitions, or file names containing these definitions.

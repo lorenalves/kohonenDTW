@@ -1,3 +1,16 @@
+# This package is a extension of kohonen package 3.0.5.
+# Copyright (C) 2018,  Ron Wehrens and Johannes Kruisselbrink
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
 supersom <- function(data,
                      grid = somgrid(),
                      rlen = 100,
@@ -11,14 +24,15 @@ supersom <- function(data,
                      mode = c("online", "batch", "pbatch"),
                      cores = -1,
                      init,
-                     normalizeDataLayers = TRUE)
+                     normalizeDataLayers = TRUE,
+                     decay.fcts = c("linear", "exponential"))
 {
   ## ##########################################################################
   ## Check data
   data <- check.data(data)
   narows <- check.data.na(data, maxNA.fraction = maxNA.fraction)
   data <- remove.data.na(data, narows)
-
+  
   ## full data is the complete list, but with rows removed that
   ## contain too many NAs
   full.data <- data
@@ -35,7 +49,7 @@ supersom <- function(data,
   nhbrdist <- unit.distances(grid)
   if (length(radius) == 1)
     radius <- c(radius, 0)
-
+  
   nobjects <- nrow(data[[1]])
   nvar <- sapply(data, ncol)
   data.matrix <- matrix(unlist(data), ncol = nobjects, byrow = TRUE)
@@ -79,7 +93,7 @@ supersom <- function(data,
         } else {
           stop("Wrong number of distances defined")
         }}}}
-
+  
   ## check for data outside the range [0-1] for any layers (in
   ## whatmap) using the tanimoto distance.
   if (any(tanidists <- dist.fcts == "tanimoto")) {
@@ -91,7 +105,7 @@ supersom <- function(data,
   
   dist.ptrs <- getDistancePointers(dist.fcts,
                                    maxNA.fraction = maxNA.fraction)
-
+  
   ## ##########################################################################
   ## Get or create initial codebooks
   ncodes <- nrow(grid$pts)
@@ -136,10 +150,10 @@ supersom <- function(data,
   }
   init.matrix <- matrix(unlist(init), ncol = ncodes, byrow = TRUE)
   
-
+  
   ## ####################################################################
   ## Weights
-
+  
   distance.weights <- orig.user.weights <- rep(0, nmat)
   if (length(whatmap) == 1) {
     weights <- user.weights <- 1
@@ -153,12 +167,12 @@ supersom <- function(data,
     }
     if (any(user.weights == 0))
       stop("Incompatibility between whatmap and user.weights")
-
+    
     if (abs(sum(user.weights)) < .Machine$double.eps) 
       stop("user.weights sum to zero")
-
+    
     user.weights <- user.weights / sum(user.weights)
-
+    
     orig.user.weights[whatmap] <- user.weights
     ## calculate distance weights from the init data (not containing any
     ## NA values) - the goal is to bring each data layer
@@ -177,7 +191,7 @@ supersom <- function(data,
                                        maxNA.fraction = maxNA.fraction,
                                        dist.fcts = dist.fcts[ii]),
                                   type = "data"))
-
+      
       if (any(sapply(meanDistances, mean) < .Machine$double.eps))
         stop("Non-informative layers present: mean distance between objects zero")
       
@@ -194,76 +208,87 @@ supersom <- function(data,
   }
   
   ## ##########################################################################
+  ## Decay functions
+  ## Check decay functions
+  
+  decay.fcts <- match.arg(decay.fcts)
+  decay.fcts <- factor(decay.fcts,
+                       levels = c("linear", "exponential"))
+  
+  ## ##########################################################################
   ## Go!
   mode <- match.arg(mode)
   switch(mode,
-  online = {
-    res <- RcppSupersom(data = data.matrix,
-                        codes = init.matrix,
-                        numVars = nvar,
-                        weights = weights,
-                        distanceFunctions = dist.ptrs,
-                        numNAs = nNA,
-                        neighbourhoodDistances = nhbrdist,
-                        neighbourhoodFct =
-                          as.integer(grid$neighbourhood.fct),
-                        alphas = alpha,
-                        radii = radius,
-                        numEpochs = rlen)
-  },
-  batch = {
-    res <- RcppBatchSupersom(data = data.matrix,
-                             codes = init.matrix,
-                             numVars = nvar,
-                             weights = weights,
-                             distanceFunctions = dist.ptrs,
-                             numNAs = nNA,
-                             neighbourhoodDistances = nhbrdist,
-                             neighbourhoodFct =
-                               as.integer(grid$neighbourhood.fct),
-                             radii = radius,
-                             numEpochs = rlen)
-  },
-  pbatch = {
-    res <- RcppParallelBatchSupersom(data = data.matrix,
-                                     codes = init.matrix,
-                                     numVars = nvar,
-                                     weights = weights,
-                                     distanceFunctions = dist.ptrs,
-                                     numNAs = nNA,
-                                     neighbourhoodDistances = nhbrdist,
-                                     neighbourhoodFct =
-                                       as.integer(grid$neighbourhood.fct),
-                                     radii = radius,
-                                     numEpochs = rlen,
-                                     numCores = cores)
-  })
+         online = {
+           res <- RcppSupersom(data = data.matrix,
+                               codes = init.matrix,
+                               numVars = nvar,
+                               weights = weights,
+                               distanceFunctions = dist.ptrs,
+                               numNAs = nNA,
+                               neighbourhoodDistances = nhbrdist,
+                               neighbourhoodFct =
+                                 as.integer(grid$neighbourhood.fct),
+                               alphas = alpha,
+                               radii = radius,
+                               numEpochs = rlen,
+                               decay = decay.fcts)
+         },
+         batch = {
+           res <- RcppBatchSupersom(data = data.matrix,
+                                    codes = init.matrix,
+                                    numVars = nvar,
+                                    weights = weights,
+                                    distanceFunctions = dist.ptrs,
+                                    numNAs = nNA,
+                                    neighbourhoodDistances = nhbrdist,
+                                    neighbourhoodFct =
+                                      as.integer(grid$neighbourhood.fct),
+                                    radii = radius,
+                                    numEpochs = rlen)
+         },
+         pbatch = {
+           res <- RcppParallelBatchSupersom(data = data.matrix,
+                                            codes = init.matrix,
+                                            numVars = nvar,
+                                            weights = weights,
+                                            distanceFunctions = dist.ptrs,
+                                            numNAs = nNA,
+                                            neighbourhoodDistances = nhbrdist,
+                                            neighbourhoodFct =
+                                              as.integer(grid$neighbourhood.fct),
+                                            radii = radius,
+                                            numEpochs = rlen,
+                                            numCores = cores)
+         })
   changes <- matrix(res$changes, ncol = nmap, byrow = TRUE)
   colnames(changes) <- names(data)
   mycodes <- res$codes
-
+  
   ## ##########################################################################
   ## Format the codes
   layerID <- rep(1:nmap, nvar)
   mycodes2 <- split(as.data.frame(mycodes), layerID)
   mycodes3 <- lapply(mycodes2, function(x) t(as.matrix(x)))
-
+  
   codes <- vector(length(full.data), mode = "list")
   names(codes) <- names(full.data)
   codes[whatmap] <- mycodes3
   for (ii in seq(along = whatmap))
     colnames(codes[[ whatmap[ii] ]]) <- colnames(data[[ii]])
-
+  
   ## ##########################################################################
   ## Prepare results
   if (keep.data) {
-    mapping <- map.kohonenDTW(list(codes = codes,
-                                distance.weights = distance.weights,
-                                dist.fcts = orig.dist.fcts,
-                                data = full.data),
-                           whatmap = whatmap,
-                           user.weights = orig.user.weights,
-                           maxNA.fraction = maxNA.fraction)
+    mapping <-
+      map.kohonenDTW(structure(list(codes = codes,
+                                 distance.weights = distance.weights,
+                                 dist.fcts = orig.dist.fcts,
+                                 data = full.data),
+                            class = "kohonenDTW"),
+                  whatmap = whatmap,
+                  user.weights = orig.user.weights,
+                  maxNA.fraction = maxNA.fraction)
     structure(list(data = full.data,
                    unit.classif = mapping$unit.classif,
                    distances = mapping$distances,
